@@ -35,3 +35,8 @@ variable "components" {
   }))
   nullable = false
 }
+
+variable "using_cloud_sql" {
+  type = bool
+  nullable = false
+}

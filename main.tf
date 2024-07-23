@@ -36,6 +36,8 @@ module "gcp_infra" {
   components = {
     for component in local.components : component["name"] => component
   }
+
+  using_cloud_sql = var.langflow.postgres_db != null
 }
 
 module "assistants" {

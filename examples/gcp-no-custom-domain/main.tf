@@ -7,7 +7,7 @@ provider "google" {
 }
 
 module "datastax-ai-stack-gcp" {
-  source = "../../modules/gcp"
+  source = "./../.."
 
   project_config = {
     create_project = {

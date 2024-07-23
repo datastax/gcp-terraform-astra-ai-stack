@@ -20,7 +20,11 @@ module "project-factory" {
   name            = coalesce(var.project_config.create_project.name, "dtsx-${random_id.proj_name.hex}")
   org_id          = var.project_config.create_project.org_id
   billing_account = var.project_config.create_project.billing_account
-  activate_apis   = compact(["run.googleapis.com", local.auto_cloud_dns_setup ? "dns.googleapis.com" : null, "sqladmin.googleapis.com"])
+  activate_apis   = compact([
+    "run.googleapis.com",
+     local.auto_cloud_dns_setup ? "dns.googleapis.com" : null,
+     var.using_cloud_sql ? "sqladmin.googleapis.com" : null,
+  ])
 }
 
 resource "random_id" "url_map" {
@@ -30,7 +34,13 @@ resource "random_id" "url_map" {
   byte_length = 1
 }
 
+locals {
+  using_custom_domains = length([for config in var.components : 1 if config.domain != null]) > 0
+}
+
 resource "google_compute_url_map" "url_map" {
+  count = local.using_custom_domains ? 1 : 0
+
   name    = "dtsx-url-map-${random_id.url_map.hex}"
   project = local.project_id
 
@@ -54,7 +64,7 @@ resource "google_compute_url_map" "url_map" {
 
     content {
       name            = path_matcher.key
-      default_service = module.lb-http.backend_services[path_matcher.key].id
+      default_service = module.lb-http[0].backend_services[path_matcher.key].id
     }
   }
 
@@ -64,7 +74,9 @@ resource "google_compute_url_map" "url_map" {
   }
 }
 
-module "lb-http" {
+module "lb-http" {  
+  count = local.using_custom_domains ? 1 : 0
+
   source  = "terraform-google-modules/lb-http/google//modules/serverless_negs"
   version = "~> 10.0"
 
@@ -75,7 +87,7 @@ module "lb-http" {
   managed_ssl_certificate_domains = compact(values(var.components)[*].domain)
   random_certificate_suffix       = true
   https_redirect                  = true
-  url_map                         = google_compute_url_map.url_map.self_link
+  url_map                         = try(google_compute_url_map.url_map[0].self_link, null)
   create_url_map                  = false
 
   backends = {
@@ -105,85 +117,5 @@ resource "google_compute_region_network_endpoint_group" "serverless_neg" {
 
   cloud_run {
     service = each.value.service_name
-  }
-}
-
-locals {
-  managed_zones        = coalesce(var.domain_config.managed_zones, {})
-  auto_cloud_dns_setup = coalesce(var.domain_config.auto_cloud_dns_setup, false)
-
-  # Lookup table which resolves a service to a { dns_name } or { zone_name }
-  _managed_zones_lut = {
-    for name, config in var.components : name => try(local.managed_zones[config.name], local.managed_zones["default"])
-    if local.auto_cloud_dns_setup
-  }
-
-  # Create a temporary grouping of DNS names with components names (dns_names may be duplicated)
-  _dns_names_with_services = flatten([
-    for name, config in var.components : [
-      {
-        dns_name     = local._managed_zones_lut[name]["dns_name"]
-        service_name = name
-      }
-    ] if try(local._managed_zones_lut[name]["dns_name"], null) != null
-  ])
-
-  # Create a mapping of DNS names to a singular name which combines the names of the components that use it
-  # e.g. { default = { dns_name = "example.com." } } => { "example.com." = "dtsx-langflow-assistants-zone" }
-  dns_name_to_combined_name = {
-    for dns_name in toset(local._dns_names_with_services[*]["dns_name"]) : dns_name =>
-    join("-", [for pair in local._dns_names_with_services : pair["service_name"] if pair["dns_name"] == dns_name])
-    if local.auto_cloud_dns_setup
-  }
-
-  # Find the zone name given a service name (e.g. "langflow" => "dtsx-langflow-assistants-zone")
-  # Passes through a google_dns_managed_zone data source for validation purposes (instead of blindly using the value)
-  managed_zones_lut = {
-    for name, config in var.components : name =>
-    (local._managed_zones_lut[config.name]["dns_name"] != null
-      ? google_dns_managed_zone.zones[
-        [for pair in local._dns_names_with_services : pair["dns_name"] if pair["service_name"] == name][0]
-      ].name
-    : local._managed_zones_lut[config.name]["zone_name"])
-    if local.auto_cloud_dns_setup
-  }
-}
-
-resource "google_dns_managed_zone" "zones" {
-  for_each = local.dns_name_to_combined_name
-  name     = "dtsx-${each.value}-zone"
-  dns_name = each.key
-  project  = local.project_id
-}
-
-resource "google_dns_record_set" "a_records" {
-  for_each = {
-    for name, config in var.components : name => config
-    if local.auto_cloud_dns_setup && config.domain != null
-  }
-
-  name         = "${each.value.domain}."
-  managed_zone = local.managed_zones_lut[each.key]
-  type         = "A"
-  ttl          = 300
-  rrdatas      = [module.lb-http.external_ip]
-  project      = local.project_id
-}
-
-output "project_id" {
-  value = local.project_id
-}
-
-output "load_balancer_ip" {
-  value = module.lb-http.external_ip
-}
-
-output "location" {
-  value = local.location
-}
-
-output "name_servers" {
-  value = {
-    for name, zone in google_dns_managed_zone.zones : name => zone.name_servers
   }
 }
