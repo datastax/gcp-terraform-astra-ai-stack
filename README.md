@@ -1,11 +1,15 @@
-# Datastax AI stack (GCP)
+# DataStax AI stack (GCP)
 
-Terraform module which helps you quickly deploy an opinionated AI/RAG stack to GCP, provided by Datastax.
+Terraform module which helps you quickly deploy an opinionated AI/RAG stack to GCP, provided by DataStax.
 
 It offers multiple easy-to-deploy components, including:
  - Langflow
  - Astra Assistants API
- - Vector databases
+ - Astra Vector Databases
+ 
+Links:
+ - Root git repo: https://github.com/datastax/terraform-datastax-ai-stack
+ - Module registry: https://registry.terraform.io/modules/datastax/ai-stack/gcp/latest
 
 ## Prerequisites
 
@@ -17,7 +21,8 @@ You may want a custom domain to attach to the Langflow/Assistants services, but 
 
 ```hcl
 module "datastax-ai-stack-gcp" {
-  source  = "datastax/ai-stack/astra//modules/gcp"
+  source  = "datastax/ai-stack/gcp"
+  version = "~> 1.0"
 
   project_config = {
     create_project = {
