@@ -54,11 +54,11 @@ The token must have the sufficient perms to manage DBs, as shown in the steps be
 
 - ✅ `2.2.a` Connect to [https://astra.datastax.com](https://astra.datastax.com)
 
-![../../assets/astra/login.png](../../assets/astra/login.png)
+![https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/astra/login.png](https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/astra/login.png)
 
 - ✅ `2.2.b` Navigate to token and generate a token with `Organization Administrator` permissions and copy the token starting by `AstraCS:...`
 
-![../../assets/astra/token.png](../../assets/astra/token.png)
+![https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/astra/token.png](https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/astra/token.png)
 
 Keep the token secure, as you won't be able to access it again!
 
@@ -76,11 +76,11 @@ https://console.cloud.google.com/billing/manage
 
 - ✅ `2.3.b` - Select the billing account you'd like to use here (if you have multiple)
 
-![../../assets/gcp/billing-account-selection.png](../../assets/gcp/billing-account-selection.png)
+![https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/gcp/billing-account-selection.png](https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/gcp/billing-account-selection.png)
 
 - ✅ `2.3.c` - You can find the billing account ID near the top-right corner of the page
 
-![../../assets/gcp/billing-account-id.png](../../assets/gcp/billing-account-id.png)
+![https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/gcp/billing-account-id.png](https://raw.githubusercontent.com/datastax/terraform-astra-ai-stack/main/assets/gcp/billing-account-id.png)
 
 Again, keep this secure!
 
@@ -91,7 +91,7 @@ Again, keep this secure!
 - ✅ `3.1.a` - Clone the same project through the following git command:
 
 ```sh
-git clone https://github.com/datastax/terraform-aws-astra-ai-stack.git
+git clone https://github.com/datastax/terraform-gcp-astra-ai-stack.git
 ```
 
 - ✅ `3.1.b` - Then, find your way to the correct diectory:
