@@ -78,6 +78,28 @@ https://console.cloud.google.com/billing/manage
 
 Again, keep this secure!
 
+### 2.4 - Log into the `gcloud` CLI
+
+It's typically best practice to authenticate using a service account, but for the purposes of this demo, we will sign in using the `gcloud`
+CLI for brevity and simplicity.
+
+- ✅ `2.4.a` - Install the `gcloud` CLI if you haven't already
+
+https://cloud.google.com/sdk/docs/install
+
+- ✅ `2.4.b` - Run the following commands to initialize and authenticate `gcloud`
+
+```sh
+gcloud init
+gcloud auth application-default login
+```
+
+- ✅ `2.4.c` - Verify that the authentication was sucessful by running the following command and ensuring it prints a token:
+
+```sh
+gcloud auth application-default print-access-token
+```
+
 ## 3. Setup
 
 ### 3.1 - Cloning the sample project
