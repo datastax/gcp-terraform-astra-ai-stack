@@ -12,12 +12,12 @@ locals {
   components = [
     for each in [
       (local.create_assistants ? {
-        name         = "assistants"
+        name         = module.assistants[0].name
         service_name = module.assistants[0].service_name
         domain       = var.assistants.domain
       } : null),
       (local.create_langflow ? {
-        name         = "langflow"
+        name         = module.langflow[0].name
         service_name = module.langflow[0].service_name
         domain       = var.langflow.domain
       } : null)

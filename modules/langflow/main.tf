@@ -1,8 +1,7 @@
 locals {
-  service_name = "langflow-service"
+  name = "langflow"
 
   container_info = {
-    service_name  = local.service_name
     image_name    = "langflowai/langflow"
     port          = 7860
     health_path   = "/health"
@@ -16,31 +15,32 @@ locals {
     : null
   )
 
-  merged_env = (try(var.config.containers.env["LANGFLOW_DATABASE_URL"], null) == null && local.postgres_url != null
-    ? merge({ LANGFLOW_DATABASE_URL = local.postgres_url }, {
-      for k, v in try(coalesce(var.config.containers.env), {}) : k => v if k != "LANGFLOW_DATABASE_URL"
-    })
-    : try(coalesce(var.config.containers.env), {})
-  )
+  env_override = {
+    for k, v in {
+      LANGFLOW_DATABASE_URL    = local.postgres_url
+      LANGFLOW_LOAD_FLOWS_PATH = var.config.default_flows != null ? "/app/default-flows" : null
+    } : k => v if v != null
+  }
 
+  merged_env        = merge(try(coalesce(var.config.containers.env), {}), local.env_override)
   merged_containers = merge(try(coalesce(var.config.containers), {}), { env = local.merged_env })
   merged_config     = merge(try(coalesce(var.config), {}), { containers = local.merged_containers })
 }
 
-output "service_name" {
-  value = local.service_name
-}
-
-output "service_uri" {
-  value = module.cloud_run_deployment.service_uri
-}
-
 module "cloud_run_deployment" {
-  source           = "../cloud_run_deployment"
+  source = "../cloud_run_deployment"
+
+  name             = local.name
   container_info   = local.container_info
   infrastructure   = var.infrastructure
   config           = local.merged_config
   using_managed_db = local.using_managed_db
+
+  files_to_mount = {
+    folder     = "/app/default-flows"
+    key_prefix = "lflow-flows-"
+    files      = coalesce(var.config.default_flows, [])
+  }
 }
 
 resource "google_sql_database_instance" "this" {
@@ -89,4 +89,16 @@ resource "google_sql_user" "admin" {
   instance = google_sql_database_instance.this[0].name
   password = random_string.admin_password[0].result
   project  = var.infrastructure.project_id
+}
+
+output "name" {
+  value = local.name
+}
+
+output "service_name" {
+  value = module.cloud_run_deployment.service_name
+}
+
+output "service_uri" {
+  value = module.cloud_run_deployment.service_uri
 }

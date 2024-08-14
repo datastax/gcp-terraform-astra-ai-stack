@@ -13,8 +13,9 @@ module "assistants_api_db" {
 }
 
 locals {
+  name = "astra-assistants"
+
   container_info = {
-    service_name = "astra-assistants-service"
     image_name   = "datastax/astra-assistants"
     port         = 8000
     entrypoint   = ["poetry", "run", "uvicorn", "impl.main:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -22,8 +23,20 @@ locals {
   }
 }
 
+module "cloud_run_deployment" {
+  source         = "../cloud_run_deployment"
+  name           = local.name
+  container_info = local.container_info
+  config         = var.config
+  infrastructure = var.infrastructure
+}
+
+output "name" {
+  value = local.name
+}
+
 output "service_name" {
-  value = local.container_info.service_name
+  value = module.cloud_run_deployment.service_name
 }
 
 output "service_uri" {
@@ -36,11 +49,4 @@ output "db_id" {
 
 output "db_info" {
   value = module.assistants_api_db.db_info
-}
-
-module "cloud_run_deployment" {
-  source         = "../cloud_run_deployment"
-  container_info = local.container_info
-  config         = var.config
-  infrastructure = var.infrastructure
 }

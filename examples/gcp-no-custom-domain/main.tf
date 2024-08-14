@@ -20,6 +20,7 @@ module "datastax-ai-stack-gcp" {
   }
 
   langflow = {
+    default_flows = ["./PiratePrompt.json"]
     postgres_db = {
       tier                = "db-f1-micro"
       deletion_protection = false

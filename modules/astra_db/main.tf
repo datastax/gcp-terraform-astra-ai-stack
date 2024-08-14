@@ -41,9 +41,9 @@ output "db_id" {
 
 output "db_info" {
   value = {
-    name = var.config.name
-    regions = local.regions
+    name      = var.config.name
+    regions   = local.regions
     keyspaces = local.keyspaces
-    endpoint = "https://${astra_database.astra_vector_db.id}-${tolist(local.regions)[0]}.apps.astra.datastax.com"
+    endpoint  = "https://${astra_database.astra_vector_db.id}-${tolist(local.regions)[0]}.apps.astra.datastax.com"
   }
 }

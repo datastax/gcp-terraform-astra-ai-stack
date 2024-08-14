@@ -20,10 +20,11 @@ module "project-factory" {
   name            = coalesce(var.project_config.create_project.name, "dtsx-${random_id.proj_name.hex}")
   org_id          = var.project_config.create_project.org_id
   billing_account = var.project_config.create_project.billing_account
-  activate_apis   = compact([
+  activate_apis = compact([
     "run.googleapis.com",
-     local.auto_cloud_dns_setup ? "dns.googleapis.com" : null,
-     var.using_cloud_sql ? "sqladmin.googleapis.com" : null,
+    local.auto_cloud_dns_setup ? "dns.googleapis.com" : null,
+    var.using_cloud_sql ? "sqladmin.googleapis.com" : null,
+    "secretmanager.googleapis.com",
   ])
 }
 
@@ -74,7 +75,7 @@ resource "google_compute_url_map" "url_map" {
   }
 }
 
-module "lb-http" {  
+module "lb-http" {
   count = local.using_custom_domains ? 1 : 0
 
   source  = "terraform-google-modules/lb-http/google//modules/serverless_negs"

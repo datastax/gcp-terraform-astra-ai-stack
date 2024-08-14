@@ -1,16 +1,16 @@
 output "load_balancer_ip" {
   description = "The IP address of the created ELB through which to access the Cloud Run services w/ a custom domain"
-  value = try(module.gcp_infra[0].load_balancer_ip, null)
+  value       = try(module.gcp_infra[0].load_balancer_ip, null)
 }
 
 output "project_id" {
   description = "The ID of the created project (or regurgitated if an existing one was used)"
-  value = try(module.gcp_infra[0].project_id, null)
+  value       = try(module.gcp_infra[0].project_id, null)
 }
 
 output "name_servers" {
   description = "The nameservers that need to be set for any created managed zones, if necessary"
-  value = try(module.gcp_infra[0].name_servers, null)
+  value       = try(module.gcp_infra[0].name_servers, null)
 }
 
 output "service_uris" {
@@ -25,5 +25,5 @@ output "service_uris" {
 
 output "astra_vector_dbs" {
   description = "A map of DB IDs => DB info for all of the dbs created (from the `assistants` module and the `vector_dbs` module)"
-  value = zipmap(concat(module.assistants[*].db_id, values(module.vector_dbs)[*].db_id), concat(module.assistants[*].db_info, values(module.vector_dbs)[*].db_info))
+  value       = zipmap(concat(module.assistants[*].db_id, values(module.vector_dbs)[*].db_id), concat(module.assistants[*].db_info, values(module.vector_dbs)[*].db_info))
 }

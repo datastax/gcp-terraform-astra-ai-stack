@@ -37,6 +37,6 @@ variable "components" {
 }
 
 variable "using_cloud_sql" {
-  type = bool
+  type     = bool
   nullable = false
 }

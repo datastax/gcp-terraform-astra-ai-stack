@@ -1,12 +1,25 @@
+variable "name" {
+  type     = string
+  nullable = false
+}
+
 variable "container_info" {
   type = object({
-    service_name  = string
     image_name    = string
     port          = number
     entrypoint    = optional(list(string))
     health_path   = string
     csql_instance = optional(string)
   })
+}
+
+variable "files_to_mount" {
+  type = object({
+    files      = set(string)
+    folder     = string
+    key_prefix = string
+  })
+  default = null
 }
 
 variable "using_managed_db" {

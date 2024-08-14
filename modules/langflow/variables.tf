@@ -1,6 +1,7 @@
 variable "config" {
   type = object({
-    domain = optional(string)
+    domain        = optional(string)
+    default_flows = optional(set(string))
     containers = optional(object({
       env    = optional(map(string))
       cpu    = optional(string)

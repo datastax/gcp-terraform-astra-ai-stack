@@ -138,7 +138,8 @@ variable "assistants" {
 
 variable "langflow" {
   type = object({
-    domain = optional(string)
+    domain        = optional(string)
+    default_flows = optional(set(string))
     containers = optional(object({
       env    = optional(map(string))
       cpu    = optional(string)
@@ -159,6 +160,11 @@ variable "langflow" {
     }))
   })
   default = null
+
+  validation {
+    condition     = alltrue([for file in try(coalesce(var.langflow.default_flows), []) : endswith(file, ".json")])
+    error_message = "All langflow.default_flows files must end in .json"
+  }
 
   description = <<EOF
     Options for the Langflow service.
